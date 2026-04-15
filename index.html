@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LATI Signature Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #9A2020;
+            --accent: #7a0f0f;
+            --bg: #f5f6f8;
+            --surface: #ffffff;
+            --border: #e5e7eb;
+            --text: #111111;
+            --text-muted: #4b5563;
+            --radius: 14px;
+            --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Tajawal", Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 24px;
+            display: flex;
+            gap: 20px;
+            color: var(--text);
+            min-height: 100vh;
+        }
+        .panel {
+            background: var(--surface);
+            padding: 22px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+        .subtitle {
+            margin: 0 0 14px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        label {
+            font-weight: 700;
+            margin-top: 12px;
+            display: block;
+            color: var(--text);
+            font-size: 13px;
+        }
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin-top: 4px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="text"]:focus, input[type="email"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 146, 0, 0.16);
+        }
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+        .col {
+            flex: 1;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-weight: 700;
+            text-align: center;
+            font-family: inherit;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--accent);
+            box-shadow: 0 8px 18px rgba(154, 32, 32, 0.2);
+            transform: translateY(-1px);
+        }
+        #preview-container {
+            border-radius: 12px;
+            padding: 20px;
+            background: #fff;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        @media (max-width: 980px) {
+            body {
+                flex-direction: column;
+            }
+            .panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <h2>إدخال بيانات الموظف (LATI)</h2>
+        <p class="subtitle">Professional bilingual signature details</p>
+        
+        <div class="row">
+            <div class="col">
+                <label>الاسم</label>
+                <input type="text" id="nameAr" value="الاسم الكامل بالعربية" oninput="updateSignature()">
+            </div>
+            <div class="col">
+                <label>Name</label>
+                <input type="text" id="nameEn" value="Full Name in English" oninput="updateSignature()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>المسمى الوظيفي</label>
+                <input type="text" id="titleAr" value="المسمى الوظيفي بالعربية" oninput="updateSignature()">
+            </div>
+            <div class="col">
+                <label>Job Title</label>
+                <input type="text" id="titleEn" value="Job Title in English" oninput="updateSignature()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>الإدارة</label>
+                <input type="text" id="adminAr" value="اسم الإدارة بالعربية" oninput="updateSignature()">
+            </div>
+            <div class="col">
+                <label>Admin</label>
+                <input type="text" id="adminEn" value="Department Name in English" oninput="updateSignature()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>الوحدة</label>
+                <input type="text" id="unitAr" value="اسم الوحدة بالعربية" oninput="updateSignature()">
+            </div>
+            <div class="col">
+                <label>Unit</label>
+                <input type="text" id="unitEn" value="Unit Name in English" oninput="updateSignature()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="email" value="name@lati.ly" oninput="updateSignature()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>رقم الهاتف 1 (+218 91)</label>
+                <input type="text" id="phone1" value="000 0000" oninput="updateSignature()">
+            </div>
+            <div class="col">
+                <label>رقم الهاتف 2 (+218 95)</label>
+                <input type="text" id="phone2" value="000 0000" oninput="updateSignature()">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label>رقم الهاتف 3 (+218 92)</label>
+                <input type="text" id="phone3" value="000 0000" oninput="updateSignature()">
+            </div>
+            <div class="col">
+                <label>رقم الهاتف 4 (+218 94)</label>
+                <input type="text" id="phone4" value="000 0000" oninput="updateSignature()">
+            </div>
+        </div>
+
+        
+    </div>
+
+    <div class="panel">
+        <h2>معاينة التوقيع</h2>
+        <p class="subtitle">Live preview ready for copy</p>
+        <div id="preview-container"></div>
+        <button class="btn-primary" onclick="copySignatureVisual()">📋 نسخ التوقيع (Copy Signature)</button>
+    </div>
+
+    <script>
+        const logoUrl = "https://raw.githubusercontent.com/AnasAdda/Email-Templates/refs/heads/main/LOGOs/logo.png";
+
+        const LATI_LINKS = {
+            web: "https://www.lati.ly/",
+            map: "https://maps.app.goo.gl/Vhf3NvqR9fRB96wX8",
+            yt: "https://www.youtube.com/channel/UCJ_4xpsosvFcYqr9ThhaLIw",
+            li: "https://www.linkedin.com/company/lati-libya",
+            x: "https://twitter.com/lati_libya",
+            fb: "https://www.facebook.com/lati.libya",
+            ig: "https://www.instagram.com/lati.libya/"
+        };
+
+        function updateSignature() {
+            const nameAr = document.getElementById('nameAr').value.trim();
+            const nameEn = document.getElementById('nameEn').value.trim();
+            const titleAr = document.getElementById('titleAr').value.trim();
+            const titleEn = document.getElementById('titleEn').value.trim();
+            const adminAr = document.getElementById('adminAr').value.trim();
+            const adminEn = document.getElementById('adminEn').value.trim();
+            const unitAr = document.getElementById('unitAr').value.trim();
+            const unitEn = document.getElementById('unitEn').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone1 = document.getElementById('phone1').value.trim();
+            const phone2 = document.getElementById('phone2').value.trim();
+            const phone3 = document.getElementById('phone3').value.trim();
+            const phone4 = document.getElementById('phone4').value.trim();
+
+            const vCardLines = [
+                "BEGIN:VCARD",
+                "VERSION:3.0",
+                nameEn ? `FN:${nameEn}` : "",
+                "ORG:Libyan Academy for Telecom & Informatics",
+                titleEn ? `Job Title:${titleEn}` : "",
+                phone1 ? `TEL;TYPE=CELL:+21891${phone1}` : "",
+                phone2 ? `TEL;TYPE=WORK:+21895${phone2}` : "",
+                phone3 ? `TEL;TYPE=WORK:+21892${phone3}` : "",
+                phone4 ? `TEL;TYPE=WORK:+21894${phone4}` : "",
+                email ? `EMAIL:${email}` : "",
+                "URL:www.lati.ly",
+                "END:VCARD"
+            ].filter(Boolean);
+            const vCardData = vCardLines.join("\n");
+            const finalQrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(vCardData);
+
+            const namesBlock = `
+                            ${nameAr ? `<tr><td style="font-size: 18px; color: #9A2020; font-weight: 800; padding-bottom: 4px; white-space: nowrap;">${nameAr}</td></tr>` : ""}
+                            ${nameEn ? `<tr><td style="font-size: 14px; color: #111111; font-weight: 700; padding-bottom: 12px; white-space: nowrap;">${nameEn}</td></tr>` : ""}`;
+
+            const titlesBlock = `
+                            ${titleAr ? `<tr><td style="font-size: 14px; color: #111111; font-weight: 700; padding-bottom: 4px; white-space: nowrap;">${titleAr}</td></tr>` : ""}
+                            ${titleEn ? `<tr><td style="font-size: 13px; color: #4b5563; padding-bottom: 10px; white-space: nowrap;">${titleEn}</td></tr>` : ""}`;
+
+            const arOrgBlock = (unitAr || adminAr) ? `
+                            <tr>
+                                <td style="padding-bottom: 4px; white-space: nowrap;">
+                                    <table cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            ${unitAr ? `<td style="font-size: 13px; color: #111111; font-weight: 700; text-align: left;">${unitAr}</td>` : ""}
+                                            ${adminAr ? `<td style="font-size: 13px; color: #111111; font-weight: 700; text-align: left; padding-left: ${unitAr ? "12px" : "0"};">${adminAr}</td>` : ""}
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>` : "";
+
+            const enOrgBlock = (unitEn || adminEn) ? `
+                            <tr>
+                                <td style="padding-bottom: 15px; white-space: nowrap;">
+                                    <table cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            ${unitEn ? `<td style="font-size: 12px; color: #4b5563; text-align: left;">${unitEn}</td>` : ""}
+                                            ${adminEn ? `<td style="font-size: 12px; color: #4b5563; text-align: left; padding-left: ${unitEn ? "12px" : "0"};">${adminEn}</td>` : ""}
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>` : "";
+
+            const contactBlock = `
+                            ${phone2 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 95 ${phone2}</span></td></tr>` : ""}
+                            ${phone1 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 91 ${phone1}</span></td></tr>` : ""}
+                            ${phone3 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 92 ${phone3}</span></td></tr>` : ""}
+                            ${phone4 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 94 ${phone4}</span></td></tr>` : ""}
+                            ${email ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700;"><img src="https://img.icons8.com/ios-filled/24/9A2020/email.png" width="14" style="vertical-align: middle; margin-right: 6px;"><a href="mailto:${email}" style="color: #9A2020; text-decoration: none; vertical-align: middle;">${email}</a></td></tr>` : ""}`;
+
+            const htmlString = `<table cellpadding="0" cellspacing="0" border="0" dir="ltr" style="font-family: 'Tajawal', Arial, sans-serif; color: #111111; line-height: 1.25; width: 600px; max-width: 100%; table-layout: fixed; text-align: left;">
+    <tr>
+        <td>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                    <td width="130" valign="middle" align="left" style="padding-right: 15px;">
+                        <img src="${finalQrUrl}" alt="QR Code" width="115" style="display: block;">
+                    </td>
+                    
+                    <td width="2" bgcolor="#9A2020" style="padding: 0;"></td>
+                    
+                    <td valign="top" align="left" style="padding-left: 20px;">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr">
+                            ${namesBlock}
+                            ${titlesBlock}
+                            ${arOrgBlock}
+                            ${enOrgBlock}
+                            ${contactBlock}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding-top: 20px;" align="left">
+            <table cellpadding="0" cellspacing="0" border="0" align="left">
+                <tr>
+                    <td align="left" style="padding-bottom: 14px;">
+                        <table cellpadding="0" cellspacing="0" border="0" dir="ltr" align="left">
+                            <tr>
+                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.web}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/domain.png" alt="Website" width="26" height="26" style="display:block; border:0;"></a></td>
+                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.map}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/marker.png" alt="Location" width="26" height="26" style="display:block; border:0;"></a></td>
+                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.yt}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/youtube-play.png" alt="YouTube" width="26" height="26" style="display:block; border:0;"></a></td>
+                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.li}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/linkedin.png" alt="LinkedIn" width="26" height="26" style="display:block; border:0;"></a></td>
+                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.x}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/twitterx--v1.png" alt="X" width="26" height="26" style="display:block; border:0;"></a></td>
+                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.ig}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/instagram-new--v1.png" alt="Instagram" width="26" height="26" style="display:block; border:0;"></a></td>
+                                <td><a href="${LATI_LINKS.fb}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/facebook-new.png" alt="Facebook" width="26" height="26" style="display:block; border:0;"></a></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left">
+                        <img src="${logoUrl}" alt="LATI Logo" width="300" style="display:block; border:0;">
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding-top: 20px; width: 100%; max-width: 100%;">
+            <div dir="rtl" style="font-size: 10px; color: #4b5563; text-align: justify; line-height: 1.4; margin-bottom: 8px; width: 100%; max-width: 100%; overflow-wrap: anywhere; word-break: break-word;">
+                محتوى هذا البريد الإلكتروني سري ومخصص للمستلم المحدد في الرسالة فقط. يمنع منعاً باتاً مشاركة أي جزء من هذه الرسالة مع أي طرف ثالث، دون موافقة خطية من المرسل. إذا تلقيت هذه الرسالة عن طريق الخطأ، فالرجاء الرد على هذه الرسالة والمتابعة بحذفها، حتى نتمكن من ضمان عدم حدوث مثل هذا الخطأ في المستقبل.
+            </div>
+            <div dir="ltr" style="font-size: 10px; color: #4b5563; text-align: justify; line-height: 1.4; width: 100%; max-width: 100%; overflow-wrap: anywhere; word-break: break-word;">
+                The content of this email is confidential and intended for the recipient specified in message only. It is strictly forbidden to share any part of this message with any third party, without a written consent of the sender. If you received this message by mistake, please reply to this message and follow with its deletion, so that we can ensure such a mistake does not occur in the future.
+            </div>
+        </td>
+    </tr>
+</table>`;
+
+            document.getElementById('preview-container').innerHTML = htmlString;
+        }
+
+        function copySignatureVisual() {
+            const preview = document.getElementById('preview-container');
+            const range = document.createRange();
+            range.selectNode(preview);
+            
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                alert("تم نسخ التوقيع بنجاح!");
+            } catch (err) {
+                alert("حدث خطأ أثناء النسخ.");
+            }
+            
+            selection.removeAllRanges();
+        }
+
+        updateSignature();
+    </script>
+</body>
+</html>
