@@ -108,12 +108,46 @@
             box-shadow: 0 8px 18px rgba(154, 32, 32, 0.2);
             transform: translateY(-1px);
         }
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            font-size: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 18px rgba(154, 32, 32, 0.12);
+            transform: translateY(-1px);
+        }
+        .preview-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .preview-head-copy h2 {
+            margin-bottom: 8px;
+        }
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
         #preview-container {
             border-radius: 12px;
             padding: 20px;
             background: #fff;
             margin-bottom: 20px;
             overflow-x: auto;
+            border: 1px solid #ece7e2;
         }
         @media (max-width: 980px) {
             body {
@@ -207,14 +241,24 @@
     </div>
 
     <div class="panel">
-        <h2>معاينة التوقيع</h2>
-        <p class="subtitle">Live preview ready for copy</p>
+        <div class="preview-head">
+            <div class="preview-head-copy">
+                <h2>معاينة التوقيع</h2>
+                <p class="subtitle">Live preview ready for copy</p>
+            </div>
+            <div class="preview-actions">
+                <button class="btn-secondary" id="directionToggleBtn" onclick="toggleSignatureDirection()">Switch to RTL</button>
+            </div>
+        </div>
         <div id="preview-container"></div>
-        <button class="btn-primary" onclick="copySignatureVisual()">📋 نسخ التوقيع (Copy Signature)</button>
+        <button class="btn-primary" onclick="copySignatureVisual()">نسخ التوقيع (Copy Signature)</button>
     </div>
 
     <script>
-        const logoUrl = "https://raw.githubusercontent.com/AnasAdda/Email-Templates/refs/heads/main/LOGOs/logo.png";
+        const defaultLogoUrl = "https://raw.githubusercontent.com/AnasAdda/Email-Templates/refs/heads/main/LOGOs/logo.png";
+        // ضع رابط الشعار البديل الخاص بوضع RTL هنا لاحقاً عند توفره.
+        const rtlLogoUrl = "";
+        let isRtlLayout = false;
 
         const LATI_LINKS = {
             web: "https://www.lati.ly/",
@@ -226,163 +270,284 @@
             ig: "https://www.instagram.com/lati.libya/"
         };
 
+        const SOCIAL_ITEMS = [
+            { key: "web", alt: "Website", icon: "https://img.icons8.com/ios-filled/50/9A2020/domain.png" },
+            { key: "map", alt: "Location", icon: "https://img.icons8.com/ios-filled/50/9A2020/marker.png" },
+            { key: "yt", alt: "YouTube", icon: "https://img.icons8.com/ios-filled/50/9A2020/youtube-play.png" },
+            { key: "li", alt: "LinkedIn", icon: "https://img.icons8.com/ios-filled/50/9A2020/linkedin.png" },
+            { key: "x", alt: "X", icon: "https://img.icons8.com/ios-filled/50/9A2020/twitterx--v1.png" },
+            { key: "ig", alt: "Instagram", icon: "https://img.icons8.com/ios-filled/50/9A2020/instagram-new--v1.png" },
+            { key: "fb", alt: "Facebook", icon: "https://img.icons8.com/ios-filled/50/9A2020/facebook-new.png" }
+        ];
+
+        function toggleSignatureDirection() {
+            isRtlLayout = !isRtlLayout;
+            syncDirectionButton();
+            updateSignature();
+        }
+
+        function syncDirectionButton() {
+            const toggleBtn = document.getElementById("directionToggleBtn");
+            if (toggleBtn) {
+                toggleBtn.textContent = isRtlLayout ? "Switch to LTR" : "Switch to RTL";
+            }
+        }
+
+        function buildLineRow(text, style) {
+            return text ? `<tr><td style="${style}">${text}</td></tr>` : "";
+        }
+
+        function forceOutlookLtrText(text) {
+            if (!text) {
+                return "";
+            }
+            const lrm = "\u200E";
+            return `${lrm}${text}${lrm}`;
+        }
+
+        function buildContactRow(iconUrl, text, href, isRtl, forceLtrValue) {
+            if (!text) {
+                return "";
+            }
+
+            const marginStyle = isRtl ? "margin-left: 6px;" : "margin-right: 6px;";
+            const valueDir = forceLtrValue ? "ltr" : (isRtl ? "rtl" : "ltr");
+            const valueAlign = forceLtrValue ? "left" : (isRtl ? "right" : "left");
+            const textValue = forceLtrValue ? forceOutlookLtrText(text) : text;
+            const valueStyle = forceLtrValue
+                ? `vertical-align: middle; direction: ltr; unicode-bidi: bidi-override; text-align: left; display: inline-block; white-space: nowrap; mso-bidi-font-family: Arial, sans-serif;`
+                : `vertical-align: middle; direction: ${valueDir}; unicode-bidi: embed; text-align: ${valueAlign}; display: inline-block;`;
+            const content = href
+                ? `<a href="${href}" dir="${valueDir}" style="color: #9A2020; text-decoration: none; ${valueStyle}">${textValue}</a>`
+                : `<span dir="${valueDir}" style="${valueStyle}">${textValue}</span>`;
+
+            return `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px; text-align: ${isRtl ? "right" : "left"};"><img src="${iconUrl}" width="14" style="vertical-align: middle; ${marginStyle}">${content}</td></tr>`;
+        }
+
+        function buildSocialBlock(isRtl) {
+            const items = isRtl ? [...SOCIAL_ITEMS].reverse() : SOCIAL_ITEMS;
+            const padSide = isRtl ? "padding-left" : "padding-right";
+
+            return items.map((item, index) => `
+                <td style="${padSide}: ${index === items.length - 1 ? "0" : "10px"};">
+                    <a href="${LATI_LINKS[item.key]}" target="_blank" style="display:inline-block; text-decoration:none;">
+                        <img src="${item.icon}" alt="${item.alt}" width="26" height="26" style="display:block; border:0;">
+                    </a>
+                </td>
+            `).join("");
+        }
+
         function updateSignature() {
-            const nameAr = document.getElementById('nameAr').value.trim();
-            const nameEn = document.getElementById('nameEn').value.trim();
-            const titleAr = document.getElementById('titleAr').value.trim();
-            const titleEn = document.getElementById('titleEn').value.trim();
-            const adminAr = document.getElementById('adminAr').value.trim();
-            const adminEn = document.getElementById('adminEn').value.trim();
-            const unitAr = document.getElementById('unitAr').value.trim();
-            const unitEn = document.getElementById('unitEn').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone1 = document.getElementById('phone1').value.trim();
-            const phone2 = document.getElementById('phone2').value.trim();
-            const phone3 = document.getElementById('phone3').value.trim();
-            const phone4 = document.getElementById('phone4').value.trim();
+            const nameAr = document.getElementById("nameAr").value.trim();
+            const nameEn = document.getElementById("nameEn").value.trim();
+            const titleAr = document.getElementById("titleAr").value.trim();
+            const titleEn = document.getElementById("titleEn").value.trim();
+            const adminAr = document.getElementById("adminAr").value.trim();
+            const adminEn = document.getElementById("adminEn").value.trim();
+            const unitAr = document.getElementById("unitAr").value.trim();
+            const unitEn = document.getElementById("unitEn").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phone1 = document.getElementById("phone1").value.trim();
+            const phone2 = document.getElementById("phone2").value.trim();
+            const phone3 = document.getElementById("phone3").value.trim();
+            const phone4 = document.getElementById("phone4").value.trim();
 
             const vCardLines = [
                 "BEGIN:VCARD",
                 "VERSION:3.0",
                 nameEn ? `FN:${nameEn}` : "",
                 "ORG:Libyan Academy for Telecom & Informatics",
-                titleEn ? `Job Title:${titleEn}` : "",
+                titleEn ? `TITLE:${titleEn}` : "",
                 phone1 ? `TEL;TYPE=CELL:+21891${phone1}` : "",
                 phone2 ? `TEL;TYPE=WORK:+21895${phone2}` : "",
                 phone3 ? `TEL;TYPE=WORK:+21892${phone3}` : "",
                 phone4 ? `TEL;TYPE=WORK:+21894${phone4}` : "",
                 email ? `EMAIL:${email}` : "",
-                "URL:www.lati.ly",
+                "URL:https://www.lati.ly/",
                 "END:VCARD"
             ].filter(Boolean);
-            const vCardData = vCardLines.join("\n");
-            const finalQrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(vCardData);
+            const finalQrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(vCardLines.join("\n"));
 
-            const namesBlock = `
-                            ${nameAr ? `<tr><td style="font-size: 18px; color: #9A2020; font-weight: 800; padding-bottom: 4px; white-space: nowrap;">${nameAr}</td></tr>` : ""}
-                            ${nameEn ? `<tr><td style="font-size: 14px; color: #111111; font-weight: 700; padding-bottom: 12px; white-space: nowrap;">${nameEn}</td></tr>` : ""}`;
+            const isRtl = isRtlLayout;
+            const contentDir = isRtl ? "rtl" : "ltr";
+            const rootDir = "ltr";
+            const textAlign = isRtl ? "right" : "left";
+            const wrapperAlign = isRtl ? "right" : "left";
+            const contentPadSide = isRtl ? "padding-right: 20px;" : "padding-left: 20px;";
+            const qrPadSide = isRtl ? "padding-left: 15px;" : "padding-right: 15px;";
+            const socialAlign = isRtl ? "right" : "left";
+            const currentLogoUrl = isRtl && rtlLogoUrl ? rtlLogoUrl : defaultLogoUrl;
+            const socialItems = isRtl ? [...SOCIAL_ITEMS].reverse() : SOCIAL_ITEMS;
 
-            const titlesBlock = `
-                            ${titleAr ? `<tr><td style="font-size: 14px; color: #111111; font-weight: 700; padding-bottom: 4px; white-space: nowrap;">${titleAr}</td></tr>` : ""}
-                            ${titleEn ? `<tr><td style="font-size: 13px; color: #4b5563; padding-bottom: 10px; white-space: nowrap;">${titleEn}</td></tr>` : ""}`;
+            const namesBlock = [
+                buildLineRow(nameAr, `font-size: 18px; color: #9A2020; font-weight: 800; padding-bottom: 4px; white-space: nowrap; text-align: ${textAlign};`),
+                buildLineRow(nameEn, `font-size: 14px; color: #111111; font-weight: 700; padding-bottom: 12px; white-space: nowrap; text-align: ${textAlign};`)
+            ].join("");
 
-            const arOrgBlock = (unitAr || adminAr) ? `
-                            <tr>
-                                <td style="padding-bottom: 4px; white-space: nowrap;">
-                                    <table cellpadding="0" cellspacing="0" border="0">
-                                        <tr>
-                                            ${unitAr ? `<td style="font-size: 13px; color: #111111; font-weight: 700; text-align: left;">${unitAr}</td>` : ""}
-                                            ${adminAr ? `<td style="font-size: 13px; color: #111111; font-weight: 700; text-align: left; padding-left: ${unitAr ? "12px" : "0"};">${adminAr}</td>` : ""}
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>` : "";
+            const titlesBlock = [
+                buildLineRow(titleAr, `font-size: 14px; color: #111111; font-weight: 700; padding-bottom: 4px; white-space: nowrap; text-align: ${textAlign};`),
+                buildLineRow(titleEn, `font-size: 13px; color: #4b5563; padding-bottom: 10px; white-space: nowrap; text-align: ${textAlign};`)
+            ].join("");
 
-            const enOrgBlock = (unitEn || adminEn) ? `
-                            <tr>
-                                <td style="padding-bottom: 15px; white-space: nowrap;">
-                                    <table cellpadding="0" cellspacing="0" border="0">
-                                        <tr>
-                                            ${unitEn ? `<td style="font-size: 12px; color: #4b5563; text-align: left;">${unitEn}</td>` : ""}
-                                            ${adminEn ? `<td style="font-size: 12px; color: #4b5563; text-align: left; padding-left: ${unitEn ? "12px" : "0"};">${adminEn}</td>` : ""}
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>` : "";
+            const orgArLine = [unitAr, adminAr].filter(Boolean).join(" | ");
+            const orgEnLine = [unitEn, adminEn].filter(Boolean).join(" | ");
+            const orgBlock = [
+                buildLineRow(orgArLine, `font-size: 13px; color: #111111; font-weight: 700; padding-bottom: 4px; white-space: nowrap; text-align: ${textAlign};`),
+                buildLineRow(orgEnLine, `font-size: 12px; color: #4b5563; padding-bottom: 15px; white-space: nowrap; text-align: ${textAlign};`)
+            ].join("");
 
-            const contactBlock = `
-                            ${phone2 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 95 ${phone2}</span></td></tr>` : ""}
-                            ${phone1 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 91 ${phone1}</span></td></tr>` : ""}
-                            ${phone3 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 92 ${phone3}</span></td></tr>` : ""}
-                            ${phone4 ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700; padding-bottom: 6px;"><img src="https://img.icons8.com/ios-filled/24/9A2020/phone.png" width="14" style="vertical-align: middle; margin-right: 6px;"><span style="vertical-align: middle;">+218 94 ${phone4}</span></td></tr>` : ""}
-                            ${email ? `<tr><td style="font-size: 14px; color: #9A2020; font-weight: 700;"><img src="https://img.icons8.com/ios-filled/24/9A2020/email.png" width="14" style="vertical-align: middle; margin-right: 6px;"><a href="mailto:${email}" style="color: #9A2020; text-decoration: none; vertical-align: middle;">${email}</a></td></tr>` : ""}`;
+            const contactBlock = [
+                buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone2 ? `+218 95 ${phone2}` : "", "", isRtl, true),
+                buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone1 ? `+218 91 ${phone1}` : "", "", isRtl, true),
+                buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone3 ? `+218 92 ${phone3}` : "", "", isRtl, true),
+                buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone4 ? `+218 94 ${phone4}` : "", "", isRtl, true),
+                buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/email.png", email, email ? `mailto:${email}` : "", isRtl, true)
+            ].join("");
 
-            const htmlString = `<table cellpadding="0" cellspacing="0" border="0" dir="ltr" style="font-family: 'Tajawal', Arial, sans-serif; color: #111111; line-height: 1.25; width: 600px; max-width: 100%; table-layout: fixed; text-align: left;">
-    <tr>
-        <td>
-            <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                    <td width="130" valign="middle" align="left" style="padding-right: 15px;">
-                        <img src="${finalQrUrl}" alt="QR Code" width="115" style="display: block;">
-                    </td>
-                    
-                    <td width="2" bgcolor="#9A2020" style="padding: 0;"></td>
-                    
-                    <td valign="top" align="left" style="padding-left: 20px;">
-                        <table cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr">
+            const detailsCell = `
+                    <td valign="top" align="${textAlign}" style="${contentPadSide}">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%" dir="${contentDir}" style="text-align: ${textAlign};">
                             ${namesBlock}
                             ${titlesBlock}
-                            ${arOrgBlock}
-                            ${enOrgBlock}
+                            ${orgBlock}
                             ${contactBlock}
                         </table>
-                    </td>
+                    </td>`;
+
+            const qrCell = `
+                    <td width="130" valign="middle" align="${textAlign}" style="${qrPadSide}">
+                        <img src="${finalQrUrl}" alt="QR Code" width="115" style="display: block;">
+                    </td>`;
+
+            const topRow = isRtl
+                ? `${detailsCell}
+                    <td width="2" bgcolor="#9A2020" style="padding: 0;"></td>
+                    ${qrCell}`
+                : `${qrCell}
+                    <td width="2" bgcolor="#9A2020" style="padding: 0;"></td>
+                    ${detailsCell}`;
+
+            const socialCells = socialItems.map((item, index) => {
+                const padSide = isRtl ? "padding-left" : "padding-right";
+                const padValue = index === socialItems.length - 1 ? "0" : "10px";
+                return `<td style="${padSide}: ${padValue};">
+                            <a href="${LATI_LINKS[item.key]}" target="_blank" style="display:inline-block; text-decoration:none;">
+                                <img src="${item.icon}" alt="${item.alt}" width="26" height="26" style="display:block; border:0;">
+                            </a>
+                        </td>`;
+            }).join("");
+
+            const htmlString = `<div align="${wrapperAlign}">
+            <table cellpadding="0" cellspacing="0" border="0" dir="${rootDir}" align="${wrapperAlign}" style="font-family: 'Tajawal', Arial, sans-serif; color: #111111; line-height: 1.25; width: 600px; max-width: 100%; table-layout: fixed; text-align: ${textAlign};">
+    <tr>
+        <td>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" dir="${rootDir}">
+                <tr>
+${topRow}
                 </tr>
             </table>
         </td>
     </tr>
-
     <tr>
-        <td style="padding-top: 20px;" align="left">
-            <table cellpadding="0" cellspacing="0" border="0" align="left">
+        <td style="padding-top: 20px;" align="${socialAlign}">
+            <table cellpadding="0" cellspacing="0" border="0" align="${socialAlign}" dir="${rootDir}">
                 <tr>
-                    <td align="left" style="padding-bottom: 14px;">
-                        <table cellpadding="0" cellspacing="0" border="0" dir="ltr" align="left">
+                    <td align="${socialAlign}" style="padding-bottom: 14px;">
+                        <table cellpadding="0" cellspacing="0" border="0" dir="${rootDir}" align="${socialAlign}">
                             <tr>
-                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.web}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/domain.png" alt="Website" width="26" height="26" style="display:block; border:0;"></a></td>
-                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.map}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/marker.png" alt="Location" width="26" height="26" style="display:block; border:0;"></a></td>
-                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.yt}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/youtube-play.png" alt="YouTube" width="26" height="26" style="display:block; border:0;"></a></td>
-                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.li}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/linkedin.png" alt="LinkedIn" width="26" height="26" style="display:block; border:0;"></a></td>
-                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.x}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/twitterx--v1.png" alt="X" width="26" height="26" style="display:block; border:0;"></a></td>
-                                <td style="padding-right: 10px;"><a href="${LATI_LINKS.ig}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/instagram-new--v1.png" alt="Instagram" width="26" height="26" style="display:block; border:0;"></a></td>
-                                <td><a href="${LATI_LINKS.fb}" target="_blank" style="display:inline-block; text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/9A2020/facebook-new.png" alt="Facebook" width="26" height="26" style="display:block; border:0;"></a></td>
+                                ${socialCells}
                             </tr>
                         </table>
                     </td>
                 </tr>
                 <tr>
-                    <td align="left">
-                        <img src="${logoUrl}" alt="LATI Logo" width="300" style="display:block; border:0;">
+                    <td align="${socialAlign}">
+                        <img src="${currentLogoUrl}" alt="LATI Logo" width="300" style="display:block; border:0;">
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
-
     <tr>
         <td style="padding-top: 20px; width: 100%; max-width: 100%;">
             <div dir="rtl" style="font-size: 10px; color: #4b5563; text-align: justify; line-height: 1.4; margin-bottom: 8px; width: 100%; max-width: 100%; overflow-wrap: anywhere; word-break: break-word;">
-                محتوى هذا البريد الإلكتروني سري ومخصص للمستلم المحدد في الرسالة فقط. يمنع منعاً باتاً مشاركة أي جزء من هذه الرسالة مع أي طرف ثالث، دون موافقة خطية من المرسل. إذا تلقيت هذه الرسالة عن طريق الخطأ، فالرجاء الرد على هذه الرسالة والمتابعة بحذفها، حتى نتمكن من ضمان عدم حدوث مثل هذا الخطأ في المستقبل.
+                محتوى هذا البريد الإلكتروني سري ومخصص للمستلم المحدد في الرسالة فقط. يمنع منعا باتا مشاركة أي جزء من هذه الرسالة مع أي طرف ثالث، دون موافقة خطية من المرسل. إذا تلقيت هذه الرسالة عن طريق الخطأ، فالرجاء الرد على هذه الرسالة والمتابعة بحذفها، حتى نتمكن من ضمان عدم حدوث مثل هذا الخطأ في المستقبل.
             </div>
             <div dir="ltr" style="font-size: 10px; color: #4b5563; text-align: justify; line-height: 1.4; width: 100%; max-width: 100%; overflow-wrap: anywhere; word-break: break-word;">
                 The content of this email is confidential and intended for the recipient specified in message only. It is strictly forbidden to share any part of this message with any third party, without a written consent of the sender. If you received this message by mistake, please reply to this message and follow with its deletion, so that we can ensure such a mistake does not occur in the future.
             </div>
         </td>
     </tr>
-</table>`;
+</table></div>`;
 
-            document.getElementById('preview-container').innerHTML = htmlString;
+            document.getElementById("preview-container").innerHTML = htmlString;
         }
 
-        function copySignatureVisual() {
-            const preview = document.getElementById('preview-container');
-            const range = document.createRange();
-            range.selectNode(preview);
-            
+        function buildClipboardHtml(previewHtml) {
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+${previewHtml}
+</body>
+</html>`;
+        }
+
+        async function copySignatureVisual() {
+            const preview = document.getElementById("preview-container");
+            if (!preview) {
+                alert("تعذر العثور على التوقيع.");
+                return;
+            }
+
+            const htmlForClipboard = buildClipboardHtml(preview.innerHTML);
+            const plainText = preview.innerText || "";
+
+            try {
+                if (navigator.clipboard && window.ClipboardItem) {
+                    const clipboardItem = new ClipboardItem({
+                        "text/html": new Blob([htmlForClipboard], { type: "text/html" }),
+                        "text/plain": new Blob([plainText], { type: "text/plain" })
+                    });
+                    await navigator.clipboard.write([clipboardItem]);
+                    alert("تم نسخ التوقيع بصيغة متوافقة مع Outlook.");
+                    return;
+                }
+            } catch (err) {
+                // Continue to fallback copy path for wider compatibility.
+            }
+
             const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(preview);
             selection.removeAllRanges();
             selection.addRange(range);
-            
+
+            const onCopy = function (event) {
+                event.preventDefault();
+                event.clipboardData.setData("text/html", htmlForClipboard);
+                event.clipboardData.setData("text/plain", plainText);
+            };
+
+            document.addEventListener("copy", onCopy, { once: true });
+
             try {
-                document.execCommand('copy');
-                alert("تم نسخ التوقيع بنجاح!");
+                const isCopied = document.execCommand("copy");
+                if (isCopied) {
+                    alert("تم نسخ التوقيع بصيغة متوافقة مع Outlook.");
+                } else {
+                    alert("حدث خطأ أثناء النسخ.");
+                }
             } catch (err) {
                 alert("حدث خطأ أثناء النسخ.");
+            } finally {
+                selection.removeAllRanges();
             }
-            
-            selection.removeAllRanges();
         }
 
+        syncDirectionButton();
         updateSignature();
     </script>
 </body>
