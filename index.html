@@ -236,6 +236,13 @@
                 <input type="text" id="phone4" value="000 0000" oninput="updateSignature()">
             </div>
         </div>
+        <div class="row">
+            <div class="col">
+                <label>رقم الهاتف 5 (+218 93)</label>
+                <input type="text" id="phone5" value="000 0000" oninput="updateSignature()">
+            </div>
+            <div class="col"></div>
+        </div>
 
         
     </div>
@@ -255,9 +262,8 @@
     </div>
 
     <script>
-        const defaultLogoUrl = "https://raw.githubusercontent.com/AnasAdda/Email-Templates/refs/heads/main/LOGOs/logo.png";
-        // ضع رابط الشعار البديل الخاص بوضع RTL هنا لاحقاً عند توفره.
-        const rtlLogoUrl = "";
+        const ltrLogoUrl = "https://raw.githubusercontent.com/AnasEddanfor/latisignature/refs/heads/main/ltr%20logo.png";
+        const rtlLogoUrl = "https://raw.githubusercontent.com/AnasEddanfor/latisignature/refs/heads/main/rtl%20logo.png";
         let isRtlLayout = false;
 
         const LATI_LINKS = {
@@ -351,6 +357,7 @@
             const phone2 = document.getElementById("phone2").value.trim();
             const phone3 = document.getElementById("phone3").value.trim();
             const phone4 = document.getElementById("phone4").value.trim();
+            const phone5 = document.getElementById("phone5").value.trim();
 
             const vCardLines = [
                 "BEGIN:VCARD",
@@ -362,6 +369,7 @@
                 phone2 ? `TEL;TYPE=WORK:+21895${phone2}` : "",
                 phone3 ? `TEL;TYPE=WORK:+21892${phone3}` : "",
                 phone4 ? `TEL;TYPE=WORK:+21894${phone4}` : "",
+                phone5 ? `TEL;TYPE=WORK:+21893${phone5}` : "",
                 email ? `EMAIL:${email}` : "",
                 "URL:https://www.lati.ly/",
                 "END:VCARD"
@@ -376,7 +384,7 @@
             const contentPadSide = isRtl ? "padding-right: 20px;" : "padding-left: 20px;";
             const qrPadSide = isRtl ? "padding-left: 15px;" : "padding-right: 15px;";
             const socialAlign = isRtl ? "right" : "left";
-            const currentLogoUrl = isRtl && rtlLogoUrl ? rtlLogoUrl : defaultLogoUrl;
+            const currentLogoUrl = isRtl ? rtlLogoUrl : ltrLogoUrl;
             const socialItems = isRtl ? [...SOCIAL_ITEMS].reverse() : SOCIAL_ITEMS;
 
             const namesBlock = [
@@ -400,6 +408,7 @@
                 buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone2 ? `+218 95 ${phone2}` : "", "", isRtl, true),
                 buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone1 ? `+218 91 ${phone1}` : "", "", isRtl, true),
                 buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone3 ? `+218 92 ${phone3}` : "", "", isRtl, true),
+                buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone5 ? `+218 93 ${phone5}` : "", "", isRtl, true),
                 buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/phone.png", phone4 ? `+218 94 ${phone4}` : "", "", isRtl, true),
                 buildContactRow("https://img.icons8.com/ios-filled/24/9A2020/email.png", email, email ? `mailto:${email}` : "", isRtl, true)
             ].join("");
@@ -512,7 +521,7 @@ ${previewHtml}
                         "text/plain": new Blob([plainText], { type: "text/plain" })
                     });
                     await navigator.clipboard.write([clipboardItem]);
-                    alert("تم نسخ التوقيع بصيغة متوافقة مع Outlook.");
+                    alert("تم نسخ التوقيع.");
                     return;
                 }
             } catch (err) {
@@ -536,7 +545,7 @@ ${previewHtml}
             try {
                 const isCopied = document.execCommand("copy");
                 if (isCopied) {
-                    alert("تم نسخ التوقيع بصيغة متوافقة مع Outlook.");
+                    alert("تم نسخ التوقيع.");
                 } else {
                     alert("حدث خطأ أثناء النسخ.");
                 }
