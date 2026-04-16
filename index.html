@@ -264,6 +264,7 @@
     <script>
         const ltrLogoUrl = "https://raw.githubusercontent.com/AnasEddanfor/latisignature/refs/heads/main/ltr%20logo.png";
         const rtlLogoUrl = "https://raw.githubusercontent.com/AnasEddanfor/latisignature/refs/heads/main/rtl%20logo.png";
+        const signatureStateKey = "lati_signature_state_v1";
         let isRtlLayout = false;
 
         const LATI_LINKS = {
@@ -296,6 +297,42 @@
             const toggleBtn = document.getElementById("directionToggleBtn");
             if (toggleBtn) {
                 toggleBtn.textContent = isRtlLayout ? "Switch to LTR" : "Switch to RTL";
+            }
+        }
+
+        function saveFormState(state) {
+            try {
+                localStorage.setItem(signatureStateKey, JSON.stringify(state));
+            } catch (err) {
+                // Ignore storage errors (private mode or blocked storage).
+            }
+        }
+
+        function loadFormState() {
+            try {
+                const raw = localStorage.getItem(signatureStateKey);
+                if (!raw) {
+                    return;
+                }
+                const state = JSON.parse(raw);
+                const fields = [
+                    "nameAr", "nameEn", "titleAr", "titleEn",
+                    "adminAr", "adminEn", "unitAr", "unitEn",
+                    "email", "phone1", "phone2", "phone3", "phone4", "phone5"
+                ];
+
+                fields.forEach((fieldId) => {
+                    const element = document.getElementById(fieldId);
+                    if (element && typeof state[fieldId] === "string") {
+                        element.value = state[fieldId];
+                    }
+                });
+
+                if (typeof state.isRtlLayout === "boolean") {
+                    isRtlLayout = state.isRtlLayout;
+                }
+            } catch (err) {
+                // Ignore malformed data and keep defaults.
             }
         }
 
@@ -358,6 +395,24 @@
             const phone3 = document.getElementById("phone3").value.trim();
             const phone4 = document.getElementById("phone4").value.trim();
             const phone5 = document.getElementById("phone5").value.trim();
+
+            saveFormState({
+                nameAr,
+                nameEn,
+                titleAr,
+                titleEn,
+                adminAr,
+                adminEn,
+                unitAr,
+                unitEn,
+                email,
+                phone1,
+                phone2,
+                phone3,
+                phone4,
+                phone5,
+                isRtlLayout
+            });
 
             const vCardLines = [
                 "BEGIN:VCARD",
@@ -556,6 +611,7 @@ ${previewHtml}
             }
         }
 
+        loadFormState();
         syncDirectionButton();
         updateSignature();
     </script>
